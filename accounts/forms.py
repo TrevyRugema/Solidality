@@ -10,4 +10,7 @@ class UserRegisterForm(UserCreationForm):
 
     class Meta:
         model=Member
-        fields=['email','username','mobile_number', 'password']
+        fields=['email','username','mobile_number', 'password','role']
+        widget={
+            'role':forms.TypedChoiceField(choices=Member.Role)
+        }

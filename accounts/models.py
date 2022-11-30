@@ -25,7 +25,7 @@ class MemberManager(BaseUserManager):
         return self.create_member(email,password,**extra_fields)
 
 class Member(AbstractUser):
-    class Types(models.TextChoices):
+    class Role(models.TextChoices):
         PRESIDENT='PRESIDENT','President',
         VISE_PRESIDENT='VISE_PRESIDENT','Vise_President',
         ACCOUNTANT='ACCOUNTANT','ACCOUNTANT',
@@ -34,33 +34,33 @@ class Member(AbstractUser):
     username=models.CharField(max_length=80,unique=True)
     email=models.EmailField(max_length=255,unique=True)
     mobile_number=PhoneNumberField(null=False,unique=True)
-    types=models.CharField(_('Types'),max_length=80,choices=Types.choices,default=Types.ORIDINARY_MEMBER)
+    role=models.CharField(_('Role'),max_length=80,choices=Role.choices,default=Role.ORIDINARY_MEMBER)
     USERNAME_FIELD='email'
-    REQUIRED_FIELDS=['username','mobile_number','types']
+    REQUIRED_FIELDS=['username','mobile_number','role']
     objects=MemberManager()
 
     def __str__(self):
-        return f" {self.first_name}{self.Types}"
+        return f" {self.first_name}{self.Role}"
 
 class PresidentManager(models.Manager):
     def get_queryset(self,*args,**kwargs):
-        return super().get_queryset(*args,**kwargs).filter(types=Member.Types.PRESIDENT)
+        return super().get_queryset(*args,**kwargs).filter(role=Member.Role.PRESIDENT)
 
 class AccountantManager(models.Manager):
     def get_queryset(self,*args,**kwars):
-        return super().get_queryset(*args,**kwars).filter(types=Member.Types.ACCOUNTANT)
+        return super().get_queryset(*args,**kwars).filter(role=Member.Role.ACCOUNTANT)
 
 class AdminManager(models.Manager):
     def get_queryset(self,*args,**kwargs):
-        return super().get_queryset(*args,**kwargs).filter(types=Member.Types.ADMIN)
+        return super().get_queryset(*args,**kwargs).filter(role=Member.Role.ADMIN)
 
 class OrdinaryMemberManager(models.Manager):
     def get_queryset(self,*args,**kwargs):
-        return super().get_queryset(*args,**kwargs).filter(types=Member.Types.ORIDINARY_MEMBER)
+        return super().get_queryset(*args,**kwargs).filter(role=Member.Role.ORIDINARY_MEMBER)
 
 class VisePresidentManager(models.Manager):
     def get_queryset(self,*args,**kwargs):
-        return super().get_queryset(*args,**kwargs).filter(types=Member.Types.VISE_PRESIDENT)
+        return super().get_queryset(*args,**kwargs).filter(role=Member.Role.VISE_PRESIDENT)
      
 
 class President(Member):
@@ -70,7 +70,7 @@ class President(Member):
     
     def save(self,*args,**kwargs):
         if not self.pk:
-            self.types=Member.Types.PRESIDENT
+            self.role=Member.Role.PRESIDENT
         return super().save(*args,**kwargs)
 
 class VisePresident(Member):
@@ -80,7 +80,7 @@ class VisePresident(Member):
 
     def save(self,*args,**kwargs):
         if not self.pk:
-            self.types=Member.Types.VISE_PRESIDENT
+            self.role=Member.Role.VISE_PRESIDENT
 
         return super().save(*args,**kwargs)
 
@@ -91,7 +91,7 @@ class Accountant(Member):
 
     def save(self,*args,**kwargs):
         if not self.pk:
-            self.types=Member.Types.ACCOUNTANT
+            self.role=Member.Role.ACCOUNTANT
         
         return super().save(*args,*kwargs)
 
@@ -102,7 +102,7 @@ class Admin(Member):
 
     def save(self,*args,**kwargs):
         if not self.pk:
-            self.types=Member.Types.ADMIN
+            self.role=Member.Role.ADMIN
 
         return super().save(*args,**kwargs)
 
@@ -113,5 +113,5 @@ class OrdinaryMember(Member):
 
     def save(self,*args,**kwargs):
         if not self.pk:
-            self.types=Member.Types.ORIDINARY_MEMBER
+            self.role=Member.Role.ORIDINARY_MEMBER
         return super().save(*args,**kwargs)
