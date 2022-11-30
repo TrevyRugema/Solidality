@@ -1,0 +1,16 @@
+{% extends 'base/base.html' %}
+
+{% block title %} Member Detail {% endblock title %}
+<div class="main">
+    <tr>
+        <td class="serial">{{ forloop.counter }}</td>
+        <td>{{ member.first_name}}</td>
+        <td>{{ member.last_name }}</td>
+        <td>{{ member.email }}</td>
+        <td>{{ member.application_fee }}</td>
+        <td>{{ member.Role }}</td>
+        <td>{{ member.telephone }}</td>
+        <td>{{ member.is_active }}</td>
+        <td>{{ member.status }}</td>
+    </tr>
+</div>

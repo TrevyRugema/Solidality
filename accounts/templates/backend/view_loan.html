@@ -1,0 +1,15 @@
+{% extends 'base/base.html' %}
+
+{% block title %} Loan Detail {% endblock title %}
+<div class="main">
+    <tr>
+        <td class="serial">{{ forloop.counter }}</td>
+        <td>{{ loan.member}}</td>
+        <td>{{ loan.amount }}</td>
+        <td>{{ loan.interest_rate }}</td>
+        <td>{{ loan.loan_period }}</td>
+        <td>{{ loan.recorded_by }}</td>
+        <td>{{ loan.loan_status }}</td>
+        <td>{{ loan.date }}</td>
+    </tr>
+</div>

@@ -1,7 +1,6 @@
-
 import environ
 import os
-
+from datetime import timedelta
 env = environ.Env(
     # set casting, default value
     DEBUG=(bool, False)
@@ -35,24 +34,47 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # local
-    'users.apps.UsersConfig',
-    'aflink',
-    # RESTFRAMEWORK
-    'rest_framework',
-    #Template
+    'accounts.apps.AccountsConfig',
+    'backend',
     'widget_tweaks',
     'crispy_forms',
-    'calculation',
-    # Automation WorkFlow
-    'viewflow'
+    # Third party app
+    ## Restframework API
+    'rest_framework',
+    'djoser',
+    # Templates
+    'bootstrap4',
+    'bootstrap_datepicker_plus',
+    # Third party app
+    "phonenumber_field",
+    'drf_yasg',
+
 ]
-REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
-         'rest_framework.permissions.AllowAny'
-    ]
+
+AUTH_USER_MODEL='accounts.Member'
+
+REST_FRAMEWORK={
+    'NON_FIELD_ERRORS_KEY':'errors',
+     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'rest_framework_simplejwt.tokens.AccessToken',
+    ),
+}
+SIMPLE_JWT={
+    'AUTH_HEADER_TYPES':('Bearer',),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer':{
+            'type':'apiKey',
+            'name':'Authorization',
+            'in':'header'
+     }
+    }
 }
 
 MIDDLEWARE = [
@@ -67,7 +89,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'inventory.urls'
-AUTH_USER_MODEL='app.User'
 AUTHENTICATION_BACKENDS = (
         'django.contrib.auth.backends.RemoteUserBackend',
         'django.contrib.auth.backends.ModelBackend',
@@ -76,7 +97,7 @@ AUTHENTICATION_BACKENDS = (
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR ,'accounts','templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -94,17 +115,14 @@ WSGI_APPLICATION = 'inventory.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('NAME'),
-        'USER':env('USER'),
-        'PASSWORD':env('PASSWORD'),
-        'HOST':env('HOST'),
-        'PORT':env('PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'mydatabase', # This is where you put the name of the db file. 
+                 # If one doesn't exist, it will be created at migration time.
     }
 }
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -141,22 +159,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 STATIC_URL = '/static/'
-
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, "static_files")
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-AUTH_USER_MODEL = 'users.User'
-#Email-backends
-LOGIN_REDIRECT_URL='dashboard'
-EMAIL_BACKEND=env('EMAIL_BACKEND')
-EMAIL_HOST=env('EMAIL_HOST')
-EMAIL_PORT=env('EMAIL_PORT')
-EMAIL_USE_TLS=env('EMAIL_USE_TLS')
-###### Email collapse Id ############
-EMAIL_HOST_USER=env('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWRD=env('EMAIL_HOST_PASSWRD')
 
 
 # DEFAULT VALUE

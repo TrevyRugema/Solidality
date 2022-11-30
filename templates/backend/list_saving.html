@@ -1,0 +1,108 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Social Fund List{% endblock title %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <div class="breadcrumbs-inner">
+        <div class="row m-0">
+            <div class="col-sm-4">
+                <div class="page-header float-left">
+                    <div class="page-title">
+                        <h1>Saving</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-8">
+                <div class="page-header float-right">
+                    <div class="page-title">
+                        <ol class="breadcrumb text-right">
+                            {% comment %} <li><a href="{% url 'dashboard' %}">Dashboard</a></li> {% endcomment %}
+                            <li><a href="{% url 'create-saving' %}">Add saving</a></li>
+                            <li class="active">List</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<!-- <div class="row">
+    <div class="col-xl-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="box-title">saving Card List </h4>
+            </div>
+            <div class="card-body--">
+                <div class="table-stats order-table ov-h">
+                    <table class="table ">
+                        <thead>
+                            <tr>
+                                <th class="serial">Id</th>
+                                <th>customer </th>
+                                <th>saving Type</th>
+                                <th>Order_nO</th>
+                                <th>contact</th>
+                                <th>Date</th>
+                                <th>saving Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if saving %}
+                            {% for saving in saving %}
+                            <tr>
+                                <td class="serial">{{ forloop.counter }}</td>
+                                <td>{{ saving.customer}}</td>
+                                <td>{{ saving.fund_type }}</td>
+                                <td>{{ saving.order_no }}</td>
+                                <td>{{ saving.contact }}</td>
+                                <td>{{ saving.date }}</td>
+                                <td>{{ saving.fund_descritpion }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                                <tr><td>No saving Card Data</td></tr>
+                            {% endif %}   
+                       </tbody>
+                    </table>
+                </div> 
+            </div>
+        </div> 
+    </div>  
+</div> -->
+ <div class="row">
+    <div class="col-xl-12">
+        <div class="card">
+            <div class="card-body">
+                 <a href="{% url 'create-saving' %}">New saving</a> 
+            </div>
+            <div class="card-body--">
+                <div class="table-stats order-table ov-h">
+                    <table class="table ">
+                        <thead>
+                            <tr>
+                                <th class="serial">Id</th>
+                                <th>Member </th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+<tbody>
+    {% for saving in object_list %}
+    <tr>
+        <td class="serial">{{ forloop.counter }}</td>
+        <td>{{ saving.member}}</td>
+        <td>{{ saving.date }}</td>
+        <td>{{ saving.amount }}</td>
+    </tr>
+    <td><a style="color:brown" href="{% url 'view-saving' saving.pk %}">view</a></td>
+    <td><a style="color:blueviolet" href="{% url 'view-saving' saving.id %}">edit</a></td>
+    <td><a style="color:crimson" href="{% url  'delete-saving' saving.id %}">delete</a></td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% endblock content %}

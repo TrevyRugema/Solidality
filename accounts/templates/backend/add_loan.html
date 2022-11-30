@@ -1,0 +1,46 @@
+{% extends 'base/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Loan Dashboard{% endblock title %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <div class="breadcrumbs-inner">
+        <div class="row m-0">
+            <div class="col-sm-4">
+                <div class="page-header float-left">
+                    <div class="page-title">
+                        <h1>Adding Loan </h1>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-8">
+                <div class="page-header float-right">
+                    <div class="page-title">
+                        <ol class="breadcrumb text-right">
+                            <li><a href="{% url 'create-loan' %}">Add</a></li>
+                            <li><a href="{% url 'loans-list' %}">Loan</a></li>
+                            <!-- <li class="active">Add</li> -->
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock breadcrumbs %}
+{% block content %}
+
+<div class="container pt-5">
+    <form method="POST" enctype="multipart/form-data">
+ 
+        <!-- Security token -->
+        {% csrf_token %}
+     
+        <!-- Using the formset -->
+        {{ form.as_p }}
+         
+        <input type="submit" value="Submit">
+    </form>
+</div>
+{% endblock  %}

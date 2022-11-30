@@ -1,7 +1,7 @@
 
 from django.db import models
-from aflink.models import  Supplier
-from users.models import User
+from backend.models import  Supplier
+from accounts.models import User
 class Department(models.Model):
     pass
 

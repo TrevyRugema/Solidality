@@ -1,36 +1,34 @@
-
 from django.contrib import admin
-from django.urls import path, include,re_path
-from django.conf import settings
+from django.contrib.auth import views as auth_views
+from django.urls import include,path, re_path
 from django.conf.urls.static import static
-# from django.contrib.auth.models import User
-# from rest_framework import routers,serializers,viewsets
+from django.conf import settings
 from .views import dashboard
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 
-
-# # Serializers define the API representation
-# class UserSerializer(serializers.HyperlinkedModelSerializer):
-#     class Meta:
-#         model=User
-#         fields=['url','username','email','is_staff']
-
-# # ViewSets define the view behavior
-# class UserViewSet(viewsets.ModelViewSet):
-#     queryset=User.objects.all()
-#     serializer_class=UserSerializer
-
-# # Routers provide an easy way of automatically determining the URL conf.
-# router=routers.DefaultRouter()
-# router.register('users',UserViewSet)
-
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Solidality Fund API",
+      default_version='v1',
+      description="Solidaty Rest Api",
+      contact=openapi.Contact(email="emma@test.com"),
+      license=openapi.License(name="BSD License"),
+   ),
+   public=True,
+   permission_classes=[permissions.AllowAny],
+)
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', dashboard, name='dashboard'),
-    path('users/', include('users.urls')),
-    path('aflink/', include('aflink.urls')),
-    path('api/',include('api.urls')),
-    path('api-auth/',include('rest_framework.urls',namespace='rest_framework')),
-   
+    path('',dashboard,name='dashboard'),
+    path('sofu/', include('backend.urls')),
+    path("accounts/", include("django.contrib.auth.urls")),
+    re_path(r'^auth/', include('djoser.urls.jwt')),
+    re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    re_path(r'^docs/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
-urlpatterns += static(settings.MEDIA_URL, doument_root=settings.MEDIA_ROOT)
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_URL)
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,22 +1,21 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-
-from aflink.models import JobCard, Supplier, Customer, Order,Item
+from backend.models import *
 
 @login_required(login_url='login')
 def dashboard(request):
-    total_item = Item.objects.count()
-    total_jobcard = JobCard.objects.count()
-    total_supplier = Supplier.objects.count()
-    total_customer = Customer.objects.count()
-    total_oder = Order.objects.count()
-    orders = Order.objects.all().order_by('-id')
+    total_member = Person.objects.count()
+    total_saving = Saving.objects.count()
+    total_loan = Loan.objects.count()
+    total_fund = SocialFund.objects.count()
+    total_active = Attendance.objects.count()
+    # loans = Loan.objects.all().order_by('-id')
     context = {
-        'item':total_item,
-        'jobcard': total_jobcard,
-        'supplier': total_supplier,
-        'customer': total_customer,
-        'order': total_oder,
-        'orders': orders
+        'member':total_member,
+        'saving': total_saving,
+        'loan': total_loan,
+        'fund': total_fund,
+        'attendees': total_active,
+        # 'loan': loans
     }
     return render(request, 'dashboard.html', context)

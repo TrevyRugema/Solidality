@@ -1,0 +1,12 @@
+{%  extends 'base/base.html' %}
+{% block title %} Updating The Member {% endblock %}
+
+<div class="main">
+    <!-- Create a Form -->
+    <form method="POST">
+        {% csrf_token %}
+        <!-- form as paragraph -->
+        {{ form.as_p }}
+        <input type="submit" value="Update">
+    </form>
+</div>

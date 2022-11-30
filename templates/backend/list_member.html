@@ -1,0 +1,121 @@
+{% extends 'base/base.html' %}
+
+{% block title %}member Card List{% endblock title %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <div class="breadcrumbs-inner">
+        <div class="row m-0">
+            <div class="col-sm-4">
+                <div class="page-header float-left">
+                    <div class="page-title">
+                        <h1>Dashboard</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-8">
+                <div class="page-header float-right">
+                    <div class="page-title">
+                        <ol class="breadcrumb text-right">
+                            {% comment %} <li><a href="{% url 'dashboard' %}">Dashboard</a></li> {% endcomment %}
+                            <li><a href="{% url 'create-member' %}">Add Member</a></li>
+                            <li class="active">List</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<!-- <div class="row">
+    <div class="col-xl-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="box-title">member Card List </h4>
+            </div>
+            <div class="card-body--">
+                <div class="table-stats order-table ov-h">
+                    <table class="table ">
+                        <thead>
+                            <tr>
+                                <th class="serial">Id</th>
+                                <th>customer </th>
+                                <th>member Type</th>
+                                <th>Order_nO</th>
+                                <th>contact</th>
+                                <th>Date</th>
+                                <th>member Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if member %}
+                            {% for member in member %}
+                            <tr>
+                                <td class="serial">{{ forloop.counter }}</td>
+                                <td>{{ member.customer}}</td>
+                                <td>{{ member.member_type }}</td>
+                                <td>{{ member.order_no }}</td>
+                                <td>{{ member.contact }}</td>
+                                <td>{{ member.date }}</td>
+                                <td>{{ member.member_descritpion }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                                <tr><td>No member Card Data</td></tr>
+                            {% endif %}   
+                       </tbody>
+                    </table>
+                </div> 
+            </div>
+        </div> 
+    </div>  
+</div> -->
+ <div class="row">
+    <div class="col-xl-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="box-title">Member List </h4>
+                 <a href="{% url 'create-member' %}">New member</a> 
+            </div>
+            <div class="card-body--">
+                <div class="table-stats order-table ov-h">
+                    <table class="table ">
+                        <thead>
+                            <tr>
+                                <th class="serial">Id</th>
+                                <th>First Name </th>
+                                <th>Last Name</th>
+                                <th>Email</th>
+                                <th>Application Fee</th>
+                                <th>Role</th>
+                                <th>Telephone</th>
+                                <th>Is_active</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+<tbody>
+    {% for member in object_list %}
+    <tr>
+        <td class="serial">{{ forloop.counter }}</td>
+        <td>{{ member.first_name}}</td>
+        <td>{{ member.last_name }}</td>
+        <td>{{ member.email }}</td>
+        <td>{{ member.application_fee }}</td>
+        <td>{{ member.Role }}</td>
+        <td>{{ member.telephone }}</td>
+        <td>{{ member.is_active }}</td>
+        <td>{{ member.status }}</td>
+    </tr>
+    <td><a style="color:brown" href="{% url 'view-member' member.pk %}">view</a></td>
+    <td><a style="color:blueviolet" href="{% url 'view-member' member.id %}">edit</a></td>
+    <td><a style="color:crimson" href="{% url  'delete-member' member.id %}">delete</a></td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+
+
+{% endblock content %}

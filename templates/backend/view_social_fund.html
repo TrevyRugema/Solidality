@@ -1,0 +1,11 @@
+{% extends 'base/base.html' %}
+
+{% block title %} Social Fund Detail {% endblock title %}
+<div class="main">
+    <tr>
+        <td class="serial">{{ forloop.counter }}</td>
+        <td>{{ fund.member}}</td>
+        <td>{{ fund.social_fund }}</td>
+        <td>{{ fund.date }}</td>
+    </tr>
+</div>

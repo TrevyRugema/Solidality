@@ -1,0 +1,108 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Social Fund List{% endblock title %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <div class="breadcrumbs-inner">
+        <div class="row m-0">
+            <div class="col-sm-4">
+                <div class="page-header float-left">
+                    <div class="page-title">
+                        <h1>Dashboard</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-8">
+                <div class="page-header float-right">
+                    <div class="page-title">
+                        <ol class="breadcrumb text-right">
+                            {% comment %} <li><a href="{% url 'dashboard' %}">Dashboard</a></li> {% endcomment %}
+                            <li><a href="{% url 'create-fund' %}">Add fund</a></li>
+                            <li class="active">List</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<!-- <div class="row">
+    <div class="col-xl-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="box-title">fund Card List </h4>
+            </div>
+            <div class="card-body--">
+                <div class="table-stats order-table ov-h">
+                    <table class="table ">
+                        <thead>
+                            <tr>
+                                <th class="serial">Id</th>
+                                <th>customer </th>
+                                <th>fund Type</th>
+                                <th>Order_nO</th>
+                                <th>contact</th>
+                                <th>Date</th>
+                                <th>fund Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if fund %}
+                            {% for fund in fund %}
+                            <tr>
+                                <td class="serial">{{ forloop.counter }}</td>
+                                <td>{{ fund.customer}}</td>
+                                <td>{{ fund.fund_type }}</td>
+                                <td>{{ fund.order_no }}</td>
+                                <td>{{ fund.contact }}</td>
+                                <td>{{ fund.date }}</td>
+                                <td>{{ fund.fund_descritpion }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                                <tr><td>No fund Card Data</td></tr>
+                            {% endif %}   
+                       </tbody>
+                    </table>
+                </div> 
+            </div>
+        </div> 
+    </div>  
+</div> -->
+ <div class="row">
+    <div class="col-xl-12">
+        <div class="card">
+            <div class="card-body">
+                 <a href="{% url 'create-fund' %}">New fund</a> 
+            </div>
+            <div class="card-body--">
+                <div class="table-stats order-table ov-h">
+                    <table class="table ">
+                        <thead>
+                            <tr>
+                                <th class="serial">Id</th>
+                                <th>Member </th>
+                                <th>Social Fund</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+<tbody>
+    {% for fund in object_list %}
+    <tr>
+        <td class="serial">{{ forloop.counter }}</td>
+        <td>{{ fund.member}}</td>
+        <td>{{ fund.social_fund }}</td>
+        <td>{{ fund.date }}</td>
+    </tr>
+    <td><a style="color:brown" href="{% url 'view-fund' fund.pk %}">view</a></td>
+    <td><a style="color:blueviolet" href="{% url 'view-fund' fund.id %}">edit</a></td>
+    <td><a style="color:crimson" href="{% url  'delete-fund' fund.id %}">delete</a></td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% endblock content %}
