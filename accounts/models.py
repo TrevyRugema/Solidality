@@ -13,15 +13,15 @@ class MemberManager(BaseUserManager):
         new_member.set_password(password)
         return new_member
     
-    def create_super_member(self,email,password,**extra_fields):
+    def create_superuser(self,email,password,**extra_fields):
         extra_fields.setdefault('is_staff',True)
-        extra_fields.setdefault('is_super_member',True)
+        extra_fields.setdefault('is_superuser',True)
         extra_fields.setdefault('is_active',True)
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError('SuperMember should have is_super_member ')
         if extra_fields.get('is_active') is not True:
-            raise ValueError('SuperMember should have is_super_member')
+            raise ValueError('Superuser should have is_super_user')
         return self.create_member(email,password,**extra_fields)
 
 class Member(AbstractUser):
