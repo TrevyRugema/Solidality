@@ -71,7 +71,7 @@ class EditCycleForm(forms.ModelForm):
 class AttendanceForm(forms.ModelForm):
     class Meta:
         model=Attendance
-        fields=('member','date','status')
+        fields=('member','status')
         status = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple)
 
 class SavingsForm(forms.ModelForm):

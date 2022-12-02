@@ -5,7 +5,7 @@ from datetime import datetime, date, timedelta
 # from dateutil.relativedelta import *
 from dateutil.relativedelta import relativedelta
 from django.db.models import Sum
-
+from phonenumber_field.modelfields import PhoneNumberField
 
 #table for Persons of the sacco.
 class Person(models.Model):
@@ -15,7 +15,7 @@ class Person(models.Model):
     joining_date =models.DateTimeField(default=datetime.now, blank=True,null=True)
     status = models.CharField(max_length=30,choices=atte,default='Absent', blank=True, null=True)
     email = models.EmailField(max_length=255, blank=True, null=True)
-    telephone = models.IntegerField(default=0, blank=True, null=True)
+    telephone = PhoneNumberField(null=True,unique=True)
     first_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
     username = models.CharField(max_length=30, unique=True, blank=True, null=True)
@@ -28,10 +28,10 @@ class Person(models.Model):
     #decoratiing the Person model with a wtrapper.
     @property 
     def total_saving(self):
-        cycles = Cycle.objects.filter(is_active=True)
-        for i in cycles:
-            startdate= i.cycle_period_start
-            enddate= i.cycle_period_end
+        person = Person.objects.filter(is_active=True)
+        for i in person:
+            startdate= i.period_start
+            enddate= i.period_end
             results=Saving.objects.filter(date__range=(startdate, enddate),name=self.id).aggregate(totals=models.Sum("amount"))
             if (results['totals']):
                 return results["totals"]
@@ -40,24 +40,24 @@ class Person(models.Model):
 
     @property
     def total_social_fund(self):
-        cycles = Cycle.objects.filter(is_active=True)
-        for i in cycles:
+        person = Person.objects.filter(is_active=True)
+        for i in person:
             if (self.first_name != None and self.last_name != None):
                 name = (self.first_name + " " + self.last_name)
-                startdate = i.cycle_period_start
-                enddate = i.cycle_period_end
+                startdate = i.period_start
+                enddate = i.period_end
                 results = SocialFund.objects.filter(date__range=(
-                        startdate, enddate), full_name=name).aggregate(totals=models.Sum("social_fund"))
+                        startdate, enddate), member=name).aggregate(totals=models.Sum("social_fund"))
                 if (results['totals']):
                     return results["totals"]
                 else:
                     return 0
     @property
     def maximum_loan_amount(self):
-        cycles = Cycle.objects.filter(is_active=True)
-        for i in cycles:
-            startdate = i.cycle_period_start
-            enddate = i.cycle_period_end
+        member = Member.objects.filter(member.pk)
+        for i in member:
+            startdate = i.period_start
+            enddate = i.period_end
             results = Saving.objects.filter(date__range=(
                     startdate, enddate), name=self.id).aggregate(totals=models.Sum("amount"))
             if (results['totals']):
@@ -67,15 +67,10 @@ class Person(models.Model):
                 return 0
 
     @property
-    def full_name(self):
-        return '%s %s' % (self.last_name, self.first_name)
-        # return (str(self.last_name )+ ' '+ str(self.first_name))
-
-    @property
     def loan_status(self):
         get_loans=Loan.objects.all()
         for i in get_loans:
-            filtering=PayingLoan.objects.filter(loan_id=i.id, name=self.full_name)
+            filtering=PayingLoan.objects.filter(loan_id=i.id, name=self.member)
             for j in filtering:
                 if j.loan_status == 'SETTLED':
                     return 'No Running Loan'
@@ -99,14 +94,13 @@ class Attendance(models.Model):
     months = today.month
     today=today
     member = models.ForeignKey(Member,on_delete=models.CASCADE)
-    date = models.DateField(blank=True, null=True)
     status=models.CharField(max_length=20,choices=STATUS_ATTENDANCE,unique=True,default='Absent')
     attendance_year = models.CharField(max_length=255, blank=True, null=True, default=years)
     attendance_month = models.CharField(max_length=255, blank=True, null=True, default=months)
     attendance_day = models.CharField(max_length=255, blank=True, null=True, default=today)
     def __str__(self):
         return str(self.member)
-    
+
 class Cycle(models.Model):
     cycle_name =  models.CharField('Cycle Name', max_length=220, null=True, blank=True, unique=True)
     rate = models.IntegerField(default=15, null=True, blank=True)
@@ -125,10 +119,14 @@ class Saving(models.Model):
         return str(self.member) 
         
 class Loan(models.Model):
+    class LoanTypes(models.TextChoices):
+        OridinaryLoan='OridinaryLoan','Oridinary',
+        EmergencyLoan='EmergencyLoan','EmergencyLoan',
     status = (("RUNNING", "RUNNING"), ("SETTLED", "SETTLED"))
     date = models.DateField(max_length=100, blank=True, null=True)
     member = models.ForeignKey(Person, on_delete=models.CASCADE,
                          max_length=100, null=True, blank=True)
+    loan_types=models.TextChoices()
     amount = models.IntegerField(default=0, null=True, blank=True)
     interest_rate = models.IntegerField(default=0)
     loan_period = models.IntegerField(default=0, null=True, blank=True)

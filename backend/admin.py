@@ -22,3 +22,7 @@ class PayingLoanAdmin(admin.ModelAdmin):
 @admin.register(Attendance)
 class AttendanceAdmin(admin.ModelAdmin):
     list_display=['id','member','status']
+
+@admin.register(SocialFund)
+class SocialFundAdmin(admin.ModelAdmin):
+    list_display=['member','social_fund','date']
