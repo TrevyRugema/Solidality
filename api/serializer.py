@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from aflink.models import Item,JobCard,Customer
+from backend.models import Item,JobCard,Customer
 
 
 class ItemSerializer(serializers.ModelSerializer):

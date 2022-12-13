@@ -18,7 +18,7 @@ from rest_framework import status
 from .models import *
 from .serializer import *
 from django.contrib.auth.decorators import login_required
-from .token import AccountActivationTokenGenerator
+from accounts.auth.utils import AppTokenGenerator
 from django.core.mail import EmailMessage
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
@@ -30,7 +30,7 @@ from django.utils.encoding import force_bytes, force_str
 def dashboard(request):
     return render(request,'dashboard.html')
 def MemberAccountRegister(request):
-    members = Member.objects.all()
+    members = User.objects.all()
     if request.method == 'POST':
         form = MembershipAccountForm(request.POST)
         if form.is_valid():
@@ -42,7 +42,7 @@ def MemberAccountRegister(request):
                 'member': member,  
                 'domain': current_site.domain,  
                 'uid': urlsafe_base64_encode(force_bytes(member.pk)),  
-                'token': AccountActivationTokenGenerator.make_token(member),  
+                'token': AppTokenGenerator.make_token(member),  
                 }) 
             to_email = form.cleaned_data.get('email')  
             email = EmailMessage(  
@@ -64,10 +64,10 @@ def MemberAccountRegister(request):
 def activate_email(request, uidb64, token):
     try:  
         uid = force_str(urlsafe_base64_decode(uidb64)) 
-        member = Member.objects.get(id=uid)  
-    except(TypeError, ValueError, OverflowError, Member.DoesNotExist):  
+        member = User.objects.get(id=uid)  
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):  
         member = None  
-    if member is not None and AccountActivationTokenGenerator.check_token(member, token): 
+    if member is not None and AppTokenGenerator.check_token(member, token): 
         member.is_active=True
         member.save()
         context={'full_name':member}
@@ -81,8 +81,8 @@ def index(request):
 #record member
 @login_required
 def add_member(request):
-    current_cycle = Member.objects.get(is_active=True)
-    all_members = Member.objects.filter(is_active=True)
+    current_cycle = User.objects.get(is_active=True)
+    all_members = User.objects.filter(is_active=True)
     if request.method=="POST":
         fname = request.POST.get('first_name')
         lname = request.POST.get('last_name')
@@ -101,7 +101,7 @@ def add_member(request):
 #edit member
 @login_required
 def edit_member(request, pk):
-    item = get_object_or_404(Member, pk=pk)
+    item = get_object_or_404(User, pk=pk)
     if request.method == "POST":
         form = PersonForm(request.POST,request.FILES, instance=item)
         if form.is_valid():
@@ -118,7 +118,7 @@ def edit_member(request, pk):
 @login_required
 def delete_member(request, pk):
     if request.method == "GET":
-        item = Member.objects.get(is_active=True, id=pk)
+        item = User.objects.get(is_active=True, id=pk)
         item.is_active='False'
         item.save()
         messages.success(request, "Member successfully deleted!")
@@ -128,7 +128,7 @@ def delete_member(request, pk):
 @login_required
 def members_list(request):
     current_cycle = Cycle.objects.get(is_active=True)
-    all_members=Member.objects.filter(is_active=True)
+    all_members=User.objects.filter(is_active=True)
     context = {
         'all_members': all_members, 'current_cycle': current_cycle
     }
@@ -138,7 +138,7 @@ def members_list(request):
 @login_required
 def view_member(request, pk):
     current_cycle = Cycle.objects.get(is_active=True)
-    member_details=Member.objects.filter(id=pk)
+    member_details=User.objects.filter(id=pk)
     context = {
         'member_details': member_details, 'current_cycle': current_cycle
     }
@@ -223,14 +223,14 @@ def make_attendence(request):
         tostate = request.POST.getlist('status')
         for i in tostate:
             status_id = i
-            member_id=Member.objects.filter(id=status_id)
+            member_id=User.objects.filter(id=status_id)
             for j in member_id:
                 tostatus='Present'
                 tofullname = str(j.first_name )+ " " + str(j.last_name)
                 Attendance.objects.create(date=todate, status=tostatus, full_name=tofullname)
         messages.success(request, f'Attendance has been succefully recorded')
         return redirect('attendence-history')
-    all_members = Member.objects.all()
+    all_members = User.objects.all()
     context={'all_members':all_members, 'current_cycle':current_cycle}
     return render(request,'make_attendance.html',context)
 
@@ -280,7 +280,7 @@ def make_saving(request):
 @login_required
 def savings_list(request):    
     try: 
-        all_members=Member.objects.all()
+        all_members=User.objects.all()
         current_cycle=Cycle.objects.get(is_active=True)
         cycles = Cycle.objects.filter(is_active=True)
         for i in cycles:
@@ -291,7 +291,7 @@ def savings_list(request):
             context={'total_amount':total_amount,'current_cycle':current_cycle, 'all_members':all_members}
             return render(request,'savings_list.html',context)
     except:
-        all_members=Member.objects.all()
+        all_members=User.objects.all()
         context={'all_members':all_members}
         return render(request,'savings_list.html',context)
 
@@ -300,8 +300,8 @@ def savings_list(request):
 
 @login_required
 def view_savings(request,pk):
-    get_member = Member.objects.get(id=pk)
-    get_all_members=Member.objects.all()
+    get_member = User.objects.get(id=pk)
+    get_all_members=User.objects.all()
     current_cycle=Cycle.objects.get(is_active=True) 
     cycles = Cycle.objects.filter(is_active=True)
     for i in cycles:
@@ -359,7 +359,7 @@ def give_loan(request):
             context['rate']=rate
     form = LoanForm()
     context['form']=form
-    all_members=Member.objects.all()
+    all_members=User.objects.all()
     context['all_members']=all_members
     return render(request,'loan_application.html', context)
 
@@ -493,7 +493,7 @@ def edit_loan_repayment(request, pk):
 @login_required
 def view_loan_repaymnets(request, pk):
     context = {}
-    al = Member.objects.all()
+    al = User.objects.all()
     if PayingLoan.objects.filter(loan_id=pk).exists():
         get_loan_id = PayingLoan.objects.filter(loan_id=pk).order_by('-date')
         for p in get_loan_id:
@@ -588,14 +588,14 @@ def record_social_fund(request):
         tostate = request.POST.getlist('status')
         for i in tostate:
             status_id = i
-            member_id = Member.objects.filter(id=status_id)
+            member_id = User.objects.filter(id=status_id)
             for j in member_id:
                 toAmount = 1000
                 tofullname = str(j.first_name) + " " + str(j.last_name)
                 SocialFund.objects.create(date=todate, social_fund=toAmount, full_name=tofullname)
         messages.success(request, f'Member Social Fund Contributions have been recorded')
         return redirect('social-fund-list')
-    all_members = Member.objects.all()
+    all_members = User.objects.all()
     context={'all_members':all_members, 'current_cycle':current_cycle}
     return render(request,'record_social_fund.html',context)
 
@@ -603,7 +603,7 @@ def record_social_fund(request):
 @login_required
 def social_fund_list(request):
     current_cycle = Cycle.objects.get(is_active=True)
-    all_members = Member.objects.all()
+    all_members = User.objects.all()
     context = {'all_members': all_members, 'current_cycle': current_cycle}
     return render(request, 'social_fund_list.html', context)
 
@@ -611,9 +611,9 @@ def social_fund_list(request):
 #display social fund contrbution routine
 @login_required
 def social_fund_routine(request, pk):
-    get_member = Member.objects.get(id=pk)
+    get_member = User.objects.get(id=pk)
     name=(get_member.first_name + " " + get_member.last_name)
-    get_all_members = Member.objects.all()
+    get_all_members = User.objects.all()
     current_cycle = Cycle.objects.get(is_active=True)
 
     cycles = Cycle.objects.filter(is_active=True)
@@ -646,7 +646,7 @@ def sacco_account(request):
     for i in current_cycle:
         startdate = i.cycle_period_start
         enddate = i.cycle_period_end
-        results_registration = Member.objects.filter(joining_date__range=(startdate, enddate)).aggregate(totals=models.Sum("application_fee"))
+        results_registration = User.objects.filter(joining_date__range=(startdate, enddate)).aggregate(totals=models.Sum("application_fee"))
         if (results_registration["totals"])!=None:
             total_registration = results_registration["totals"]
         else:

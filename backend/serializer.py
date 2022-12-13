@@ -34,11 +34,11 @@ class MemberDetailSerializer(serializers.ModelSerializer):
     Role = serializers.CharField(max_length=250)
 
     class Meta:
-        model=Member
+        model=User
         fields='__all__'
 
 class MemberUpdateStatus(serializers.ModelSerializer):
-    model=Member
+    model=User
     fields=['status','roles']
 
 

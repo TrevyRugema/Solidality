@@ -1,6 +1,6 @@
 from rest_framework import generics
 
-from aflink.models import *
+from backend.models import *
 from .serializer import *
 from rest_framework.response import Response
 from rest_framework import status

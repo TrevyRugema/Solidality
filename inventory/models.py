@@ -1,7 +1,7 @@
 
 from django.db import models
 from backend.models import  Supplier
-from accounts.models import User
+from accounts.auth.models import User
 class Department(models.Model):
     pass
 

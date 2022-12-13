@@ -51,7 +51,7 @@ INSTALLED_APPS = [
 
 ]
 
-AUTH_USER_MODEL='accounts.Member'
+AUTH_USER_MODEL='accounts.User'
 
 REST_FRAMEWORK={
     'NON_FIELD_ERRORS_KEY':'errors',
@@ -115,11 +115,22 @@ WSGI_APPLICATION = 'inventory.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': 'mydatabase', # This is where you put the name of the db file. 
+#                  # If one doesn't exist, it will be created at migration time.
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'mydatabase', # This is where you put the name of the db file. 
-                 # If one doesn't exist, it will be created at migration time.
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME':'solidality',
+        'USER':'postgres',
+        'PASSWORD':'rutre',
+        'HOST':'localhost',
+        'PORT':5432
     }
 }
 

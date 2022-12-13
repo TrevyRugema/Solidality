@@ -1,12 +1,16 @@
 
-from accounts.models import Member
+from accounts.auth.models import User
 from django.db import models
 from datetime import datetime, date, timedelta
 # from dateutil.relativedelta import *
 from dateutil.relativedelta import relativedelta
 from django.db.models import Sum
 from phonenumber_field.modelfields import PhoneNumberField
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth import get_user_model
+import uuid
 
+User=get_user_model()
 #table for Persons of the sacco.
 class Person(models.Model):
     is_active = models.BooleanField(default=True)   # can login
@@ -54,7 +58,7 @@ class Person(models.Model):
                     return 0
     @property
     def maximum_loan_amount(self):
-        member = Member.objects.filter(member.pk)
+        member = User.objects.filter(member.pk)
         for i in member:
             startdate = i.period_start
             enddate = i.period_end
@@ -93,7 +97,7 @@ class Attendance(models.Model):
     years=today.year
     months = today.month
     today=today
-    member = models.ForeignKey(Member,on_delete=models.CASCADE)
+    member = models.ForeignKey(User,on_delete=models.CASCADE)
     status=models.CharField(max_length=20,choices=STATUS_ATTENDANCE,unique=True,default='Absent')
     attendance_year = models.CharField(max_length=255, blank=True, null=True, default=years)
     attendance_month = models.CharField(max_length=255, blank=True, null=True, default=months)
@@ -101,14 +105,14 @@ class Attendance(models.Model):
     def __str__(self):
         return str(self.member)
 
-class Cycle(models.Model):
-    cycle_name =  models.CharField('Cycle Name', max_length=220, null=True, blank=True, unique=True)
+class Member(models.Model):
+    member_name =  models.CharField('Member Name', max_length=220, null=True, blank=True, unique=True)
     rate = models.IntegerField(default=15, null=True, blank=True)
-    cycle_period_start = models.DateField('Ikibina Period Start',max_length=255, blank=False, null=False, unique=True)
-    cycle_period_end = models.DateField('Ikibina Period End',max_length=255, blank=False, null=False, unique=True)
+    member_period_start = models.DateField('Ikibina Period Start',max_length=255, blank=False, null=False, unique=True)
+    member_period_end = models.DateField('Ikibina Period End',max_length=255, blank=False, null=False, unique=True)
     is_active = models.BooleanField(default=True) 
     def __str__(self):
-        return str(self.cycle_period_start.year) + "/" + str(self.cycle_period_end.year)
+        return str(self.member_period_start.year) + "/" + str(self.member_period_end.year)
 
 class Saving(models.Model):
     date = models.DateField(max_length=100, blank=True, null=True)
@@ -120,43 +124,46 @@ class Saving(models.Model):
         
 class Loan(models.Model):
     class LoanTypes(models.TextChoices):
-        OridinaryLoan='OridinaryLoan','Oridinary',
-        EmergencyLoan='EmergencyLoan','EmergencyLoan',
+        ORIDINARY_LOAN='ORIDINARY_LOAN','Oridinary-Loan',
+        EMERGENCY_LOAN='EMERGENCY_LOAN','Emergency-Loan',
     status = (("RUNNING", "RUNNING"), ("SETTLED", "SETTLED"))
     date = models.DateField(max_length=100, blank=True, null=True)
     member = models.ForeignKey(Person, on_delete=models.CASCADE,
                          max_length=100, null=True, blank=True)
-    loan_types=models.TextChoices()
+    loan_types=models.CharField(_('Loan Types'),max_length=80,choices=LoanTypes.choices, default=LoanTypes.EMERGENCY_LOAN,serialize=True)
     amount = models.IntegerField(default=0, null=True, blank=True)
     interest_rate = models.IntegerField(default=0)
     loan_period = models.IntegerField(default=0, null=True, blank=True)
     loan_status = models.CharField(max_length=100,choices=status, default='RUNNING', null=True, blank=True)
-    loan_id=models.UUIDField(auto_created=True,unique=True,max_length=5,null=True)
-    recorded_by =models.ForeignKey(Member,on_delete=models.CASCADE)
+    loan_id=models.UUIDField(
+         primary_key = True,
+         default = uuid.uuid4,
+         editable = False)
+    recorded_by =models.ForeignKey(User,on_delete=models.CASCADE)
     
     def __str__(self):
         return str(self.member)
 
     @property
     def total_repayments(self):
-        if PayingLoan.objects.filter(loan_id=self.id).exists():
-            get_loan = PayingLoan.objects.filter(loan_id=self.id)
+        if PayingLoan.objects.filter(loan_id=self.loan_id).exists():
+            get_loan = PayingLoan.objects.filter(loan_id=self.loan_id)
             for i in get_loan:
                 return i.total_paid
         else:
             return 0
     @property
     def balance(self):
-        if PayingLoan.objects.filter(loan_id=self.id).exists():
-            get_loan = PayingLoan.objects.filter(loan_id=self.id)
+        if PayingLoan.objects.filter(loan_id=self.loan_id).exists():
+            get_loan = PayingLoan.objects.filter(loan_id=self.loan_id)
             for i in get_loan:
                 return i.balance
         else:
             return self.amount
     @property
     def status(self):
-        if PayingLoan.objects.filter(loan_id=self.id).exists():
-            get_loan = PayingLoan.objects.filter(loan_id=self.id)
+        if PayingLoan.objects.filter(loan_id=self.loan_id).exists():
+            get_loan = PayingLoan.objects.filter(loan_id=self.loan_id)
             for i in get_loan:
                 return i.loan_status
         else:
@@ -198,23 +205,24 @@ class Loan(models.Model):
         
 class PayingLoan(models.Model):
     status = (("RUNNING", "RUNNING"), ("SETTLED", "SETTLED"))
-    loan_id = models.CharField(max_length=100, blank=True, null=True)
+    loan_id = models.ForeignKey(Loan,on_delete=models.CASCADE,null=True)
     date = models.DateField(max_length=100, blank=True, null=True)
     member=models.ForeignKey(Person,on_delete=models.CASCADE)
     amount_paid = models.IntegerField(null=True, blank=True, default=0)
     total_repayment = models.IntegerField(blank=True, default=0)
-    loan_balance = models.IntegerField(blank=True, default=0)
+    loan_balance = models.ForeignKey(Loan,on_delete=models.CASCADE,related_name='loan balance +')
     loan_status = models.CharField(max_length=100, choices=status, default='RUNNING', null=True, blank=True)
+    
     @property
     def total_repayment(self):
         get_all_loans = Loan.objects.all()
         for j in get_all_loans:
-            cycle = Cycle.objects.filter(is_active=True)
-            for i in cycle:
-                startdate = i.cycle_period_start
-                enddate = i.cycle_period_end
+            member = User.objects.filter(is_active=True)
+            for i in member:
+                startdate = i.member_period_start
+                enddate = i.member_period_end
             results = PayingLoan.objects.filter(date__range=(
-                startdate, enddate), loan_id=j.id).aggregate(totals=models.Sum("total_paid"))
+                startdate, enddate), loan_id=j.loan_id).aggregate(totals=models.Sum("total_paid"))
             if (results['totals']):
                 x=(results["totals"])
                 return x

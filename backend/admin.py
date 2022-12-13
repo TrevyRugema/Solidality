@@ -12,7 +12,7 @@ class MemberAdmin(admin.ModelAdmin):
     list_display=('id','first_name','last_name','Role','joining_date','status','telephone','email','application_fee')   
 @admin.register(Loan)
 class LoanAdmin(admin.ModelAdmin):
-    list_display = ['id','loan_id', 'loan_status', 'member','amount','status']
+    list_display = ['loan_id', 'loan_status', 'member','amount','status','total_repayments','balance','deadline','grace_period','penalties','loan_interest']
 @admin.register(Saving)
 class SavingAdmin(admin.ModelAdmin):
     list_display = ['id','member', 'date', 'amount',]

@@ -12,8 +12,8 @@ class MembershipAccountForm(forms.ModelForm):
                                 widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Password'}))
 
     class Meta:
-        model = Member
-        fields = [ 'username', 'email','mobile_number']
+        model = User
+        fields = [ 'username', 'email']
         # 'roles'
         labels = {
             'username': 'Username',
@@ -54,17 +54,17 @@ class SocialFundForm(forms.ModelForm):
                     })
         }
 
-class CyclesForm(forms.ModelForm):
+class MembersForm(forms.ModelForm):
     class Meta:
-        model=Cycle
-        fields=('cycle_name','cycle_period_start','cycle_period_end','rate','is_active')
+        model=Member
+        fields=('member_name','member_period_start','member_period_end','rate','is_active')
 
 
-class EditCycleForm(forms.ModelForm):
+class EditMemberForm(forms.ModelForm):
     class Meta:
-        model = Cycle
-        fields = ('cycle_name', 'cycle_period_start',
-                  'cycle_period_end', 'rate')
+        model = Member
+        fields = ('member_name', 'member_period_start',
+                  'member_period_end', 'rate')
         widgets = {
             'date': TextInput(attrs={'placeholder': 'Date(YYY-MM-DD)'})
         }
