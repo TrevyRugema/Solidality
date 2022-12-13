@@ -157,13 +157,14 @@ class Loan(models.Model):
         if PayingLoan.objects.filter(loan_id=self.loan_id).exists():
             get_loan = PayingLoan.objects.filter(loan_id=self.loan_id)
             for i in get_loan:
+                i.loan_balance - i.amount_paid
                 return i.balance
         else:
             return self.amount
     @property
     def status(self):
         if PayingLoan.objects.filter(loan_id=self.loan_id).exists():
-            get_loan = PayingLoan.objects.filter(loan_id=self.loan_id)
+            get_loan = PayingLoan.objects.filter(loan_id=self.status)
             for i in get_loan:
                 return i.loan_status
         else:
@@ -210,7 +211,7 @@ class PayingLoan(models.Model):
     member=models.ForeignKey(Person,on_delete=models.CASCADE)
     amount_paid = models.IntegerField(null=True, blank=True, default=0)
     total_repayment = models.IntegerField(blank=True, default=0)
-    loan_balance = models.ForeignKey(Loan,on_delete=models.CASCADE,related_name='loan balance +')
+    # loan_balance = models.ForeignKey(Loan,on_delete=models.CASCADE,related_name='loan balance +')
     loan_status = models.CharField(max_length=100, choices=status, default='RUNNING', null=True, blank=True)
     
     @property
@@ -228,6 +229,8 @@ class PayingLoan(models.Model):
                 return x
             else:
                 return 0
+    def loan_balance(self):
+        pass
     def __str__(self):
         return str(self.member)
 
