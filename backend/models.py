@@ -9,6 +9,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 import uuid
+from django.db.models import Sum
 
 User=get_user_model()
 #table for Persons of the sacco.
@@ -29,33 +30,11 @@ class Person(models.Model):
     def __str__(self):
         return str(self.last_name) + ' ' + str(self.first_name)
 
-    #decoratiing the Person model with a wtrapper.
-    @property 
-    def total_saving(self):
-        person = Person.objects.filter(is_active=True)
-        for i in person:
-            startdate= i.period_start
-            enddate= i.period_end
-            results=Saving.objects.filter(date__range=(startdate, enddate),name=self.id).aggregate(totals=models.Sum("amount"))
-            if (results['totals']):
-                return results["totals"]
-            else:
-                return 0 
+    class Meta:
+        db_table="Sofu Member"
 
-    @property
-    def total_social_fund(self):
-        person = Person.objects.filter(is_active=True)
-        for i in person:
-            if (self.first_name != None and self.last_name != None):
-                name = (self.first_name + " " + self.last_name)
-                startdate = i.period_start
-                enddate = i.period_end
-                results = SocialFund.objects.filter(date__range=(
-                        startdate, enddate), member=name).aggregate(totals=models.Sum("social_fund"))
-                if (results['totals']):
-                    return results["totals"]
-                else:
-                    return 0
+    #decoratiing the Person model with a wtrapper.
+   
     @property
     def maximum_loan_amount(self):
         member = User.objects.filter(member.pk)
@@ -91,6 +70,21 @@ class SocialFund(models.Model):
     def __str__(self):
         return str(self.member)
 
+    @property
+    def total_social_fund(self):
+        person = Person.objects.filter(is_active=True)
+        for i in person:
+            if (self.first_name != None and self.last_name != None):
+                name = (self.first_name + " " + self.last_name)
+                startdate = i.period_start
+                enddate = i.period_end
+                results = SocialFund.objects.filter(date__range=(
+                        startdate, enddate), member=name).aggregate(totals=models.Sum("social_fund"))
+                if (results['totals']):
+                    return results["totals"]
+                else:
+                    return 0
+
 class Attendance(models.Model):
     STATUS_ATTENDANCE= (('Present', 'Present'), ('Absent', 'Absent'))
     today = datetime.now()
@@ -121,6 +115,19 @@ class Saving(models.Model):
     amount = models.IntegerField(default=0, null=True, blank=True)
     def __str__(self):
         return str(self.member) 
+
+    @property 
+    def total_saving(self):
+        person = Person.objects.filter(is_active=True)
+        for i in person:
+            startdate= i.period_start
+            enddate= i.period_end
+            results=Saving.objects.filter(date__range=(startdate, enddate),name=self.id).aggregate(totals=models.Sum("amount"))
+            if (results['totals']):
+                return results["totals"]
+            else:
+                return 0 
+
         
 class Loan(models.Model):
     class LoanTypes(models.TextChoices):

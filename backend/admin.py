@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
 from .forms import*
 from .models import *
+from backend.interest.models import models
 
 admin.site.site_title='Solidaltiy Fund'
 admin.site.site_header='Solidaltiy-Dashboard '
@@ -15,7 +16,7 @@ class LoanAdmin(admin.ModelAdmin):
     list_display = ['loan_id', 'loan_status', 'member','amount','status','total_repayments','balance','deadline','grace_period','penalties','loan_interest']
 @admin.register(Saving)
 class SavingAdmin(admin.ModelAdmin):
-    list_display = ['id','member', 'date', 'amount',]
+    list_display = ['id','member', 'date', 'amount','total_saving']
 @admin.register(PayingLoan)
 class PayingLoanAdmin(admin.ModelAdmin):
     list_display=['loan_id','amount_paid','member','total_repayment','loan_balance','date']
@@ -25,4 +26,4 @@ class AttendanceAdmin(admin.ModelAdmin):
 
 @admin.register(SocialFund)
 class SocialFundAdmin(admin.ModelAdmin):
-    list_display=['member','social_fund','date']
+    list_display=['member','social_fund','date','total_social_fund']
