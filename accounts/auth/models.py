@@ -34,16 +34,26 @@ AUTH_PROVIDERS = {'facebook': 'facebook', 'google': 'google',
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    class Roles(models.Model):
+        MEMBER='MEMBER','Member',
+        PRESIDENT='PRESIDENT','President',
+        VS_PRESIDENT='VS_PRESIDENT','Vs_President',
+        ACCOUNTANT='ACCOUNTANT','Accountant',
+        
+    first_name=models.CharField(max_length=255,null=True,blank=True)
+    last_name=models.CharField(max_length=255,null=True,blank=True)
     username = models.CharField(max_length=255, unique=True, db_index=True)
     email = models.EmailField(max_length=255, unique=True, db_index=True)
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    is_superuser=models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     auth_provider = models.CharField(
         max_length=255, blank=False,
         null=True, default=AUTH_PROVIDERS.get('email'))
+    
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
@@ -51,8 +61,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     def __str__(self):
-        return self.username
-
+        return str(self.last_name) + ' ' + str(self.first_name)
     def tokens(self):
         refresh = RefreshToken.for_user(self)
         return {

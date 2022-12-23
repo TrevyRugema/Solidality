@@ -1,6 +1,6 @@
 
 from django import forms
-from .models import *
+from backend.models import *
 from django.forms import Textarea, TextInput, ChoiceField
 # from bootstrap_datepicker_plus import DatePickerInput, TimePickerInput, MonthPickerInput
 
@@ -34,11 +34,12 @@ class MembershipAccountForm(forms.ModelForm):
             user.save()
         return user
 
-class PersonForm(forms.ModelForm):
+class MemberForm(forms.ModelForm):
+    query_set=Member.objects.all()
     class Meta:
-        model=Person
-        fields = ('status', 'email', 'telephone', 'first_name', 'last_name',
-                  'application_fee', 'is_active',  'Role',)
+        model=Member
+        fields = ('telephone',
+                  'application_fee','roles','member','loan')
 
 
 class SocialFundForm(forms.ModelForm):
@@ -54,20 +55,20 @@ class SocialFundForm(forms.ModelForm):
                     })
         }
 
-class MembersForm(forms.ModelForm):
-    class Meta:
-        model=Member
-        fields=('member_name','member_period_start','member_period_end','rate','is_active')
+# class MembersForm(forms.ModelForm):
+#     class Meta:
+#         model=Member
+#         fields=('member_name','member_period_start','member_period_end','rate','is_active')
 
 
-class EditMemberForm(forms.ModelForm):
-    class Meta:
-        model = Member
-        fields = ('member_name', 'member_period_start',
-                  'member_period_end', 'rate')
-        widgets = {
-            'date': TextInput(attrs={'placeholder': 'Date(YYY-MM-DD)'})
-        }
+# class EditMemberForm(forms.ModelForm):
+#     class Meta:
+#         model = Member
+#         fields = ('member_name', 'member_period_start',
+#                   'member_period_end', 'rate')
+#         widgets = {
+#             'date': TextInput(attrs={'placeholder': 'Date(YYY-MM-DD)'})
+#         }
 class AttendanceForm(forms.ModelForm):
     class Meta:
         model=Attendance
@@ -90,8 +91,8 @@ class SavingsForm(forms.ModelForm):
 class LoanForm(forms.ModelForm):
     class Meta:
         model=Loan
-        fields = ('member', 'date', 'amount', 'interest_rate',
-                  'loan_period', 'recorded_by', 'loan_status')
+        fields = ('member', 'date', 'amount', 'loan_interest',
+                  'loan_period','verified_by','authorized_by','approved_by')
 
         widgets={
             'date': forms.DateInput(
@@ -110,8 +111,8 @@ class PayingLoanForm(forms.ModelForm):
 class EditLoanForm(forms.ModelForm):
     class Meta:
         model=Loan
-        fields = ('member', 'date', 'amount', 'interest_rate',
-                  'loan_period', 'loan_status')
+        fields = ('member', 'date', 'amount', 'loan_interest',
+                  'loan_period', 'verified_by','authorized_by','approved_by')
         labels = {
             'date': 'Date (YYY-MM-DD)'
         }

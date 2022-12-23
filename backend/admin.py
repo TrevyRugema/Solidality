@@ -8,12 +8,13 @@ from backend.interest.models import models
 admin.site.site_title='Solidaltiy Fund'
 admin.site.site_header='Solidaltiy-Dashboard '
 
-@admin.register(Person)
-class MemberAdmin(admin.ModelAdmin):
-    list_display=('id','first_name','last_name','Role','joining_date','status','telephone','email','application_fee')   
+# @admin.register(Person)
+# class MemberAdmin(admin.ModelAdmin):
+#     list_display=('id','Role','joining_date','attendance_status','telephone','email','application_fee')   
 @admin.register(Loan)
 class LoanAdmin(admin.ModelAdmin):
-    list_display = ['loan_id', 'loan_status', 'member','amount','status','total_repayments','balance','deadline','grace_period','penalties','loan_interest']
+    list_display = ['loan_id', 'member','amount','loan_interest','total_repayments','loan_balance','deadline','grace_period','penalties','loan_status']
+    
 @admin.register(Saving)
 class SavingAdmin(admin.ModelAdmin):
     list_display = ['id','member', 'date', 'amount','total_saving']

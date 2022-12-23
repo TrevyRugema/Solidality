@@ -1,4 +1,3 @@
-
 from accounts.auth.models import User
 from django.db import models
 from datetime import datetime, date, timedelta
@@ -9,23 +8,16 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 import uuid
-from django.db.models import Sum
+from backend.interest.models import Loan
 
 User=get_user_model()
-#table for Persons of the sacco.
-class Person(models.Model):
-    is_active = models.BooleanField(default=True)   # can login
-    roles = (('Admin', 'Admin'), ('Ordinary', 'Ordinary'))
-    atte = (('Present', 'Present'), ('Absent', 'Absent'))
-    joining_date =models.DateTimeField(default=datetime.now, blank=True,null=True)
-    status = models.CharField(max_length=30,choices=atte,default='Absent', blank=True, null=True)
-    email = models.EmailField(max_length=255, blank=True, null=True)
+class Member(User):
+    member=models.ForeignKey(User,on_delete=models.CASCADE)
     telephone = PhoneNumberField(null=True,unique=True)
-    first_name = models.CharField(max_length=30, blank=True, null=True)
-    last_name = models.CharField(max_length=255, blank=True, null=True)
-    username = models.CharField(max_length=30, unique=True, blank=True, null=True)
     application_fee = models.IntegerField(default=10000, blank=True, null=True)
-    Role = models.CharField(max_length=250, choices=roles)
+    roles = models.CharField(max_length=250, choices=User.Roles,default=User.Roles.MEMBER,unique=False)
+    loan=models.ForeignKey(User,on_delete=models.CASCADE)
+
     
     def __str__(self):
         return str(self.last_name) + ' ' + str(self.first_name)
@@ -35,36 +27,8 @@ class Person(models.Model):
 
     #decoratiing the Person model with a wtrapper.
    
-    @property
-    def maximum_loan_amount(self):
-        member = User.objects.filter(member.pk)
-        for i in member:
-            startdate = i.period_start
-            enddate = i.period_end
-            results = Saving.objects.filter(date__range=(
-                    startdate, enddate), name=self.id).aggregate(totals=models.Sum("amount"))
-            if (results['totals']):
-                x=(results["totals"]*2)
-                return x
-            else:
-                return 0
-
-    @property
-    def loan_status(self):
-        get_loans=Loan.objects.all()
-        for i in get_loans:
-            filtering=PayingLoan.objects.filter(loan_id=i.id, name=self.member)
-            for j in filtering:
-                if j.loan_status == 'SETTLED':
-                    return 'No Running Loan'
-                else:
-                    return 'Running Loan'   
-        return j.loan_status        
-                
-
-
 class SocialFund(models.Model):
-    member = models.ForeignKey(Person,on_delete=models.CASCADE)
+    member = models.ForeignKey(Member,on_delete=models.CASCADE)
     date = models.DateField(blank=True, null=True)
     social_fund = models.IntegerField('Social Fund',default=0, blank=True, null=True)
     def __str__(self):
@@ -72,8 +36,8 @@ class SocialFund(models.Model):
 
     @property
     def total_social_fund(self):
-        person = Person.objects.filter(is_active=True)
-        for i in person:
+        members = Member.objects.filter(is_active=True)
+        for i in members:
             if (self.first_name != None and self.last_name != None):
                 name = (self.first_name + " " + self.last_name)
                 startdate = i.period_start
@@ -99,27 +63,27 @@ class Attendance(models.Model):
     def __str__(self):
         return str(self.member)
 
-class Member(models.Model):
-    member_name =  models.CharField('Member Name', max_length=220, null=True, blank=True, unique=True)
-    rate = models.IntegerField(default=15, null=True, blank=True)
-    member_period_start = models.DateField('Ikibina Period Start',max_length=255, blank=False, null=False, unique=True)
-    member_period_end = models.DateField('Ikibina Period End',max_length=255, blank=False, null=False, unique=True)
-    is_active = models.BooleanField(default=True) 
-    def __str__(self):
-        return str(self.member_period_start.year) + "/" + str(self.member_period_end.year)
+# class Member(models.Model):
+#     member_name =  models.CharField('Member Name', max_length=220, null=True, blank=True, unique=True)
+#     rate = models.IntegerField(default=15, null=True, blank=True)
+#     member_period_start = models.DateField('Ikibina Period Start',max_length=255, blank=False, null=False, unique=True)
+#     member_period_end = models.DateField('Ikibina Period End',max_length=255, blank=False, null=False, unique=True)
+#     is_active = models.BooleanField(default=True) 
+#     def __str__(self):
+#         return str(self.member_period_start.year) + "/" + str(self.member_period_end.year)
 
 class Saving(models.Model):
     date = models.DateField(max_length=100, blank=True, null=True)
     member = models.ForeignKey(
-        Person, on_delete=models.CASCADE, max_length=100, null=True, blank=True)
+        Member, on_delete=models.CASCADE, max_length=100, null=True, blank=True)
     amount = models.IntegerField(default=0, null=True, blank=True)
     def __str__(self):
         return str(self.member) 
 
     @property 
     def total_saving(self):
-        person = Person.objects.filter(is_active=True)
-        for i in person:
+        members = Member.objects.filter(is_active=True)
+        for i in members:
             startdate= i.period_start
             enddate= i.period_end
             results=Saving.objects.filter(date__range=(startdate, enddate),name=self.id).aggregate(totals=models.Sum("amount"))
@@ -129,93 +93,104 @@ class Saving(models.Model):
                 return 0 
 
         
-class Loan(models.Model):
-    class LoanTypes(models.TextChoices):
-        ORIDINARY_LOAN='ORIDINARY_LOAN','Oridinary-Loan',
-        EMERGENCY_LOAN='EMERGENCY_LOAN','Emergency-Loan',
-    status = (("RUNNING", "RUNNING"), ("SETTLED", "SETTLED"))
-    date = models.DateField(max_length=100, blank=True, null=True)
-    member = models.ForeignKey(Person, on_delete=models.CASCADE,
-                         max_length=100, null=True, blank=True)
-    loan_types=models.CharField(_('Loan Types'),max_length=80,choices=LoanTypes.choices, default=LoanTypes.EMERGENCY_LOAN,serialize=True)
-    amount = models.IntegerField(default=0, null=True, blank=True)
-    interest_rate = models.IntegerField(default=0)
-    loan_period = models.IntegerField(default=0, null=True, blank=True)
-    loan_status = models.CharField(max_length=100,choices=status, default='RUNNING', null=True, blank=True)
-    loan_id=models.UUIDField(
-         primary_key = True,
-         default = uuid.uuid4,
-         editable = False)
-    recorded_by =models.ForeignKey(User,on_delete=models.CASCADE)
+# class Loan(models.Model):
+#     loan_id=models.UUIDField(
+#          primary_key = True,
+#          default = uuid.uuid4,
+#          editable = False)
+#     member = models.ForeignKey(Member, on_delete=models.CASCADE,
+#                          max_length=100, null=True, blank=True)
+#     amount = models.IntegerField(default=0, null=True, blank=True)
+#     loan_interest=models.ForeignKey(Loan,on_delete=models.CASCADE,null=True)
+#     date = models.DateField(max_length=100, blank=True, null=True)
+#     loan_period = models.IntegerField(default=0, null=True, blank=True)
+#     verified_by =models.ForeignKey(Member,on_delete=models.CASCADE,related_name='Verified_by',null=True,)
+#     authorized_by =models.ForeignKey(Member,on_delete=models.CASCADE,related_name='Authorized_by',null=True,)
+#     approved_by =models.ForeignKey(Member,on_delete=models.CASCADE,related_name='Approved_by',null=True,)
     
-    def __str__(self):
-        return str(self.member)
 
-    @property
-    def total_repayments(self):
-        if PayingLoan.objects.filter(loan_id=self.loan_id).exists():
-            get_loan = PayingLoan.objects.filter(loan_id=self.loan_id)
-            for i in get_loan:
-                return i.total_paid
-        else:
-            return 0
-    @property
-    def balance(self):
-        if PayingLoan.objects.filter(loan_id=self.loan_id).exists():
-            get_loan = PayingLoan.objects.filter(loan_id=self.loan_id)
-            for i in get_loan:
-                i.loan_balance - i.amount_paid
-                return i.balance
-        else:
-            return self.amount
-    @property
-    def status(self):
-        if PayingLoan.objects.filter(loan_id=self.loan_id).exists():
-            get_loan = PayingLoan.objects.filter(loan_id=self.status)
-            for i in get_loan:
-                return i.loan_status
-        else:
-            return 'RUNNING'
+#     def __str__(self):
+#         return str(self.member)
 
-    @property
-    def deadline(self):
-        end_date = (self.date)+relativedelta(months=+self.loan_period)
-        return end_date
+#     @property
+#     def total_repayments(self):
+#         if PayingLoan.objects.filter(loan_id=self.loan_id).exists():
+#             get_loan = PayingLoan.objects.filter(loan_id=self.loan_id)
+#             for i in get_loan:
+#                 return i.total_paid
+#         else:
+#             return 0
+#     @property
+#     def loan_balance(self):
+#         if PayingLoan.objects.filter(loan_id=self.loan_id).exists():
+#             get_loan = PayingLoan.objects.filter(loan_id=self.loan_id)
+#             for i in get_loan:
+#                 i.amount - i.amount_paid
+#                 return i.balance
+#         else:
+#             return self.amount
+#     @property
+#     def loan_status(self):
+#         if PayingLoan.objects.filter(loan_id=self.loan_id).exists():
+#             get_loan = PayingLoan.objects.filter(loan_id=self.status)
+#             for i in get_loan:
+#                 return i.loan_status
+#         else:
+#             return 'RUNNING'
+
+#     @property
+#     def deadline(self):
+#         end_date = (self.date)+relativedelta(months=+self.loan_period)
+#         return end_date
    
-    @property
-    def repayment(self):
-        interest = ((self.interest_rate / 100) * self.loan_period * self.amount)
-        loan_repayment = interest + self.amount
-        return loan_repayment
+#     @property
+#     def repayment(self):
+#         interest = ((self.loan_interest / 100) * self.loan_period * self.amount)
+#         loan_repayment = interest + self.amount
+#         return loan_repayment
 
-    @property
-    def grace_period(self):
-        grace_date = (self.date)+relativedelta(months=+(self.loan_period + 1))
-        return grace_date
+#     @property
+#     def grace_period(self):
+#         grace_date = (self.date)+relativedelta(months=+(self.loan_period + 1))
+#         return grace_date
     
-    @property
-    def penalties(self):
-        pen_date=date.today()
-        if pen_date >= self.grace_period and self.status == 'RUNNING':
-            # penalted=(self.repay) + (self.interest)
-            # self.amount=penalted
-            # self.save() 
-            return (self.repayment/2)
-        elif pen_date >= self.grace_period and self.status == 'SETTLED':
-            return 'Not Penalized'
-        else:
-            return 'No Penalty Yet'
+#     @property
+#     def penalties(self):
+#         pen_date=date.today()
+#         if pen_date >= self.grace_period and self.status == 'RUNNING':
+#             # penalted=(self.repay) + (self.interest)
+#             # self.amount=penalted
+#             # self.save() 
+#             return (self.repayment/2)
+#         elif pen_date >= self.grace_period and self.status == 'SETTLED':
+#             return 'Not Penalized'
+#         else:
+#             return 'No Penalty Yet'
 
-    @property
-    def loan_interest(self):
-        interest = ((self.interest_rate / 100) * self.loan_period * self.amount)
-        return interest
+    # @property
+    # def loan_interest(self):
+    #     interest = ((self.interest_rate / 100) * self.loan_period * self.amount)
+    #     return interest
         
+    # @property
+    # def maximum_loan_amount(self,user_id):
+    #     members = Member.objects.filter(user_id)
+    #     for i in members:
+    #         startdate = i.period_start
+    #         enddate = i.period_end
+    #         results = Saving.objects.filter(date__range=(
+    #                 startdate, enddate), name=self.id).aggregate(totals=models.Sum("amount"))
+    #         if (results['totals']):
+    #             x=(results["totals"]*2)
+    #             return x
+    #         else:
+    #             return 0
+
 class PayingLoan(models.Model):
     status = (("RUNNING", "RUNNING"), ("SETTLED", "SETTLED"))
     loan_id = models.ForeignKey(Loan,on_delete=models.CASCADE,null=True)
     date = models.DateField(max_length=100, blank=True, null=True)
-    member=models.ForeignKey(Person,on_delete=models.CASCADE)
+    member=models.ForeignKey(Member,on_delete=models.CASCADE)
     amount_paid = models.IntegerField(null=True, blank=True, default=0)
     total_repayment = models.IntegerField(blank=True, default=0)
     # loan_balance = models.ForeignKey(Loan,on_delete=models.CASCADE,related_name='loan balance +')
