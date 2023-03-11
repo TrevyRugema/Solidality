@@ -1,3 +1,3 @@
 # Django Web Application
-This is a Logistics management system
+This is a Social Fund => Ikibina
 
